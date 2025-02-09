@@ -8,7 +8,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 
 class FlowerModelService {
-    private val retrofit = RetrofitHelper.getRetrofit("http://localhost:7158/")
+    private val retrofit = RetrofitHelper.getRetrofit("http://192.168.0.12:7158/")
 
     suspend fun recognizeFlower(imagePart: MultipartBody.Part): PlantIdentificationResult? {
         return withContext(Dispatchers.IO) {
