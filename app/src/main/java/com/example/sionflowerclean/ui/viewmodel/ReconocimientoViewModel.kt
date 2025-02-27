@@ -11,12 +11,14 @@ import okhttp3.MultipartBody
 class ReconocimientoViewModel : ViewModel(){
     val plantIdentificationResult = MutableLiveData<PlantIdentificationResult?>()
     val informationState = MutableLiveData<Boolean>()
+    val progressBarState = MutableLiveData<Boolean>()
 
     private val reconocimientoUseCase = ReconocimientoUseCase()
 
     fun recognizeFlower(imagePart: MultipartBody.Part){
         viewModelScope.launch {
             val result = reconocimientoUseCase(imagePart)
+            changeStateProgressBar(false)
             plantIdentificationResult.postValue(result)
             informationState.postValue(true)
         }
@@ -24,6 +26,10 @@ class ReconocimientoViewModel : ViewModel(){
 
     fun closePopUp(){
         informationState.postValue(false)
+    }
+
+    fun changeStateProgressBar(state: Boolean){
+        progressBarState.postValue(state)
     }
 
 

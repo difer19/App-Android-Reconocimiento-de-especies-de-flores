@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,6 +50,7 @@ import com.example.sionflowerclean.ui.components.PopupSample
 import com.example.sionflowerclean.ui.viewmodel.ReconocimientoViewModel
 import java.util.Objects
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.lifecycle.MutableLiveData
 import com.example.sionflowerclean.core.toMultipart
 
 
@@ -58,6 +60,8 @@ fun ReconocimientoScreen() {
     val reconocimientoViewModel: ReconocimientoViewModel = viewModel()
     val flowerData by reconocimientoViewModel.plantIdentificationResult.observeAsState()
     val informationState by reconocimientoViewModel.informationState.observeAsState()
+    val progressBarState by reconocimientoViewModel.progressBarState.observeAsState()
+    val imageState = MutableLiveData<Boolean>()
 
     val defaultImage = LocalContext.current.getResourceUri(R.drawable.flower_preview)
     val context = LocalContext.current
@@ -67,7 +71,7 @@ fun ReconocimientoScreen() {
         "com.example.sionflowerclean" + ".provider", file
     )
 
-    var photoUri: Uri? by remember { mutableStateOf(defaultImage) }
+    var photoUri: Uri? by remember { mutableStateOf(null) }
     var capturedImageUri by remember { mutableStateOf(Uri.EMPTY) }
 
 
@@ -95,10 +99,13 @@ fun ReconocimientoScreen() {
 
 
     var painter = LocalContext.current.rememberImagePainterFromUri(defaultImage)
+    imageState.value = false
     if (photoUri !== null) {
         painter = LocalContext.current.rememberImagePainterFromUri(photoUri)
-    }else if (capturedImageUri !== null){
+        imageState.value = true
+    }else if (capturedImageUri !== Uri.EMPTY){
         painter = LocalContext.current.rememberImagePainterFromUri(capturedImageUri)
+        imageState.value = true
     }
 
     if (informationState == true) {
@@ -182,19 +189,23 @@ fun ReconocimientoScreen() {
             }
         }
 
+        Spacer(modifier = Modifier.height(15.dp))
 
         Button(
             onClick = {
-                if (photoUri !== null) {
-                    photoUri!!.toMultipart(context)
-                        ?.let { reconocimientoViewModel.recognizeFlower(it) }
-                }else if (capturedImageUri !== null){
-                    capturedImageUri!!.toMultipart(context)
-                        ?.let { reconocimientoViewModel.recognizeFlower(it) }
+                if (imageState.value == true) {
+                    reconocimientoViewModel.changeStateProgressBar(true)
+                    if (photoUri !== defaultImage) {
+                        photoUri!!.toMultipart(context)
+                            ?.let { reconocimientoViewModel.recognizeFlower(it) }
+                    }else if (capturedImageUri !== Uri.EMPTY){
+                        capturedImageUri!!.toMultipart(context)
+                            ?.let { reconocimientoViewModel.recognizeFlower(it) }
+                    }
                 }else{
                     Toast.makeText(context, "No se ha seleccionado una imagen", Toast.LENGTH_SHORT).show()
+                    reconocimientoViewModel.changeStateProgressBar(false)
                 }
-
             }
         ) {
             Icon(
@@ -210,7 +221,17 @@ fun ReconocimientoScreen() {
 
         Image(
             painter = R.drawable.plantnet.toPainter(),
-            contentDescription = "Imagen desde URI"
+            contentDescription = "Imagen desde URI",
+            modifier = Modifier.fillMaxWidth(0.5f)
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(45.dp))
         )
+
+        Spacer(modifier = Modifier.height(40.dp))
+
+        if (progressBarState == true) {
+            CircularProgressIndicator()
+        }
+
     }
 }

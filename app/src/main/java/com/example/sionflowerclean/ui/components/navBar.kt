@@ -21,9 +21,9 @@ import com.example.sionflowerclean.core.toPainter
 @Composable
 fun NavBar(navController: NavHostController) {
     var selectedItem by remember { mutableIntStateOf(1) }
-    val items = listOf("Jardin", "Reconocimiento", "Perfil")
+    val items = listOf("Jardin", "Reconocimiento")
     val selectedIcons = listOf(R.drawable.flower, R.drawable.camera, R.drawable.user)
-    val screens = listOf("jardin", "reconocimiento", "perfil")
+    val screens = listOf("jardin", "reconocimiento")
 
     Scaffold(
         bottomBar = {
